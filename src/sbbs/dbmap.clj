@@ -23,7 +23,7 @@
 
 ;;; determine whether a comment is the thread leader
 (defn thread-leader? [comment]
-  (= 0 (:parent comment)))
+  (or (= 0 (:parent comment)) (nil? (:parent comment))))
 
 ;;; load the comment from the database
 (defn load-comment [id]
@@ -40,12 +40,25 @@
 
 ;;; store a comment in the database
 (defn store-comment [comment]
-  (:id
-   (bulk-update sbbs-commentdb [
-                                 {:userid (:userid comment)
-                                  :posted_at (:posted_at comment)
-                                  :title (:title comment)
-                                  :text (:text comment)
-                                  :parent (:parent comment)
-                                  :category (:category comment) }
-                                 ])))
+  (let [parent (if (nil? (:parent comment)) 0 (:parent comment))]
+   (:id (first
+         (bulk-update sbbs-commentdb [
+                                      {:userid (:userid comment)
+                                       :posted_at (:posted_at comment)
+                                       :title (:title comment)
+                                       :text (:text comment)
+                                       :parent (:parent comment)
+                                       :category (:category comment) }
+                                      ])))))
+
+(defn reply-to-comment [userid posted_at text parent]
+  (if (= 0 parent)
+    nil
+    (let [parent-comment (load-comment parent)]
+      (sbbs.records/create-comment
+       userid
+       posted_at
+       (:title parent)
+       text
+       parent
+       (:category parent)))))
