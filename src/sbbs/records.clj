@@ -18,7 +18,7 @@
 ;;;                    primarily useful for the parent comment
 (defrecord Comment
     #^{ :doc "representation of a comment in a thread" }
-  [id userid posted_at edited_at text parent category])
+  [id userid posted_at edited_at title text parent category])
 
 ;;; a User is tied to the underlying UNIX host; ergo, all permissions
 ;;; and user names are those assigned by the system
@@ -40,3 +40,7 @@ threads" }
 (defn category-to-group [category]
   "Convert a category name to the expected UNIX group name"
   (format "%s-%s" group-prefix category))
+
+;;; shortcut for creating comments with a nil id, i.e. for storing
+(defn create-comment [userid posted_at edited_at title text parent category]
+  (Comment. nil userid posted_at edited_at title text parent category))
