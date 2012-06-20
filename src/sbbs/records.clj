@@ -1,4 +1,9 @@
-(ns sbbs.posts)
+(ns sbbs.records)
+;;;; contains the data types used in sbbs and functions for
+;;;; manipulating those data types.
+
+;;; the prefix for group names
+(def group-prefix "sbbs")
 
 ;;; a comment consists of the following fields:
 ;;;    id
@@ -30,3 +35,8 @@
     #^{ :doc "Representation of a category or subforum, a collection of
 threads" }
   [id name description])
+
+;;; convert category to group name
+(defn category-to-group [category]
+  "Convert a category name to the expected UNIX group name"
+  (format "%s-%s" group-prefix category))
