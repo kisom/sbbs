@@ -42,5 +42,5 @@ threads" }
   (format "%s-%s" group-prefix category))
 
 ;;; shortcut for creating comments with a nil id, i.e. for storing
-(defn create-comment [userid posted_at edited_at title text parent category]
-  (Comment. nil userid posted_at edited_at title text parent category))
+(defn create-comment [userid posted_at title text parent category]
+  (Comment. nil userid posted_at posted_at title text parent category))
