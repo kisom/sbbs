@@ -1,4 +1,3 @@
-
 (defproject sbbs "0.9.0-alpha"
   :description "simple bulletin board system"
   :license {:name "ISC license"
