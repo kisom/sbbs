@@ -7,4 +7,5 @@
   :dependencies [
                  [org.clojure/clojure "1.4.0"]
                  [com.ashafa/clutch "0.4.0-SNAPSHOT"]
+                 [cheshire "4.0.0"]
                 ])

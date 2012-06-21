@@ -8,7 +8,7 @@
   (create-comment "ff7895ff985a18872e584c53dc0001d6" 1340225233
                   "I think we should start doing commenty things"
                   "Just wanted to test some of the comment functions."
-                  0 "ff7895ff985a18872e584c53dc001704"))
+                  0 "ff7895ff985a18872e584c53dc000a1c"))
 
 (def parent-id (store-comment test-comment))
 

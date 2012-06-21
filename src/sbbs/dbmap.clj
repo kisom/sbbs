@@ -1,5 +1,6 @@
 (ns sbbs.dbmap
   (:use [com.ashafa.clutch :only [get-database bulk-update get-document]])
+  (:use [cheshire.core :as json])
   (:require [sbbs.records])
   (:import [sbbs.records Comment])
   (:import [sbbs.records User])
@@ -107,3 +108,40 @@
 
 (defn get-comment-thread-titles [category]
   (map :title (get-comment-threads category)))
+
+(defn get-db-base-url []
+  (format "%s://%s:%d%s/_design/comments/_view"
+          (:protocol sbbs-commentdb)
+          (:host sbbs-commentdb)
+          (:port sbbs-commentdb)
+          (:path sbbs-commentdb)))
+
+(defn reply-view-url [parentid]
+  (format "%s/replies?key=\"%s\""
+          (get-db-base-url)
+          parentid))
+
+(defn retrieve-couch-view-results [url]
+  ((cheshire.core/decode
+    (slurp url)) "rows"))
+
+(defn get-replies [parentid]
+  (retrieve-couch-view-results (reply-view-url parentid)))
+
+(defn build-thread [parentid]
+  (flatten
+   (vector
+    (load-comment parentid)
+    (map #'load-comment (map #(% "id") (get-replies parentid)))
+    )))
+
+(defn category-list-view-url [categoryid]
+  (format "%s/catlist?key=\"%s\""
+          (get-db-base-url)
+          categoryid))
+
+(defn build-category [categoryid]
+  (map #'build-thread
+       (map #(% "id")
+            (retrieve-couch-view-results
+             (category-list-view-url categoryid)))))
