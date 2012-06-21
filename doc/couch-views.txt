@@ -24,8 +24,9 @@ function(doc) {
 ///////////////////
 
 // sbbs_dev1_comments/_design/comments/_view/catlist
-// list of thread parents listed by category. useful for getting the thread list from
-// the category id, i.e. to find all the threads in a given category.
+// list of thread parents listed by category. useful for getting the
+// thread list from the category id, i.e. to find all the threads 
+// in a given category.
 function(doc) {
     if (doc.category && !doc.parent && doc.parent != null) {
         emit(doc.category, doc.title);
@@ -41,13 +42,18 @@ function(doc) {
 }
 
 // sbbs_dev1_comments/_design/comments/_view/replies
-// list all replies; useful for finding replies to a given parent. returns rows of 
-// parentid and posted_at for sorting.
+// list all replies; useful for finding replies to a given
+// parent. returns rows of parentid and posted_at for sorting.
 function(doc) {
   if (doc.parent) {
     emit(doc.parent, doc.posted_at);
   }
 }
 
-
-
+// sbbs_dev1_comments/_design/comments/_view/parent_title
+// 
+function(doc) {
+  if (doc.title && !doc.parent && doc.parent != null) {
+    emit(doc.title, null);
+  }
+}

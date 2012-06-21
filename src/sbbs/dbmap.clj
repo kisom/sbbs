@@ -143,6 +143,27 @@ in checking views."
           (:port sbbs-categorydb)
           (:path sbbs-categorydb)))
 
+(defn- parent-view-url
+  "Returns the url for the Couch view that returns all parents."
+  []
+  (format "%s/parents" (get-db-base-url)))
+
+(defn- retrieve-couch-view-results
+  "Given the url for a particular view (with all parameters filled in),
+retrieve the results and decode it from JSON to a Clojure map."
+  [url]
+  ((cheshire.core/decode
+    (slurp url)) "rows"))
+
+(defn get-parents-for-category
+  "Returns all parents in a given category."
+  [categoryid]
+  (let [parents (retrieve-couch-view-results (parent-view-url))]
+    (filter #(= 0 (:parent %))
+            (filter #(= categoryid (:category %))
+                    (map #'load-comment
+                         (map #(% "id") parents))))))
+
 (defn- reply-view-url
   "Returns the url for the Couch view that returns all replies for a given
 parent comment ID."
@@ -150,13 +171,6 @@ parent comment ID."
   (format "%s/replies?key=\"%s\""
           (get-db-base-url)
           parentid))
-
-(defn- retrieve-couch-view-results
-  "Given the url for a particular view (with all parameters filled in), retrieve
-the results and decode it from JSON to a Clojure map."
-  [url]
-  ((cheshire.core/decode
-    (slurp url)) "rows"))
 
 (defn get-replies
   "Given a parent ID, retrieve a list of all replies to that comment."
@@ -194,15 +208,22 @@ there exist comments."
   "Get a count of the number of threads in a category."
   [categoryid]
   (count
-   (map
-    #(% "name")
-    (retrieve-couch-view-results
-     (format "%s/list_categories" (get-category-db-base-url))))))
-  
+   (get-parents-for-category categoryid)))
+
 (defn get-category-list
   "Retrieve a list of all categories."
-  [categoryid]
+  []
   (map
-   #(% "name")
+   #(% "key")
    (retrieve-couch-view-results
     (format "%s/list_categories" (get-category-db-base-url)))))
+
+(defn category-id-from-name
+  "Translate a category name to its respective ID."
+  [category]
+  (first
+   (map #(% "id")
+        (retrieve-couch-view-results
+         (format "%s/list_categories?key=\"%s\""
+                 (get-category-db-base-url)
+                 category)))))
