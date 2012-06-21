@@ -28,6 +28,13 @@ for a project to get back into Clojure with, so I've taken up work on
 sbbs. Now, the `s` in `sbbs` stands for "simple", but it is still
 built with security in mind.
 
+### Why the change from 'secure' to 'simple'
+Given the design of the current database, i.e. a console application running
+on a hackNET-controlled server where only hackNET members have access, and
+all access is via SSH, it has been deemed to have enough security from the
+environment it is deployed on. The focus now is on a simple system to facilitate
+getting projects together.
+
 ## Core Principles
 
 ### Leverage the underlying UNIX implementation for the hard work
@@ -48,3 +55,8 @@ to the document representing a category or a comment.
 
 Copyright 2012 Kyle Isom <coder@kyleisom.net>. 
 Distributed under the ISC license.
+
+## Powered by
+* Clojure, Apache CouchDB, Emacs, Slime, Swank
+
+"Hacks and glory await!" - SLIME
