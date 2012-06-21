@@ -5,12 +5,16 @@
   (:import [sbbs.records User])
   (:import [sbbs.records Category]))
 
-(defn format-timestamp [timestamp]
+(defn format-timestamp
+  "Given a timestamp, display it in human-readable format."
+  [timestamp]
   (format "%d" timestamp))
 
 ;;; display a comment
 ;;;; TODO: word wrapping
-(defn print-comment [comment]
+(defn print-comment
+  "Pretty printing for a comment. Currently, doesn't word wrap."
+  [comment]
   (let [leader (if (sbbs.dbmap/thread-leader? comment) "" "\t")]
     (if (sbbs.dbmap/thread-leader? comment)
       (printf "---------\n%s\n" (:title comment)))
@@ -22,7 +26,9 @@
     (printf "\n")))
 
 ;;; print out a thread of comments
-(defn print-thread [comment-thread]
+(defn print-thread
+  "Pretty prints a thread of comments in order of posted_at timestamps."
+  [comment-thread]
   (let [sorted-thread (sort-by :posted_at < comment-thread)]
     (doseq [comment sorted-thread]
       (print-comment comment))))

@@ -1,5 +1,10 @@
-// category views
+/////////////////////
+// category views //
+////////////////////
+
 // sbbs_dev1_categories/_design/categories/_view/list_categories
+// provides a list of categories and their description; can be used to retrieve
+// a category by name.
 function(doc) {
     var category_name, description;
     if (doc.name && doc.description) {
@@ -7,8 +12,13 @@ function(doc) {
     }
 }
 
-// comment views
+////////////////////
+// comment views //
+///////////////////
+
 // sbbs_dev1_comments/_design/comments/_view/catlist
+// list of thread parents listed by category. useful for getting the thread list from
+// the category id, i.e. to find all the threads in a given category.
 function(doc) {
     if (doc.category && !doc.parent && doc.parent != null) {
         emit(doc.category, doc.title);
@@ -16,6 +26,7 @@ function(doc) {
 }
 
 // sbbs_dev1_comments/_design/comments/_view/parents
+// list all comments that are thread parents
 function(doc) {
   if (!doc.parent && doc.parent != null) {
     emit(doc.title, doc.category);
@@ -23,6 +34,8 @@ function(doc) {
 }
 
 // sbbs_dev1_comments/_design/comments/_view/replies
+// list all replies; useful for finding replies to a given parent. returns rows of 
+// parentid and posted_at for sorting.
 function(doc) {
   if (doc.parent) {
     emit(doc.parent, doc.posted_at);

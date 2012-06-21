@@ -37,10 +37,15 @@ threads" }
   [id name description])
 
 ;;; convert category to group name
-(defn category-to-group [category]
+(defn category-to-group
   "Convert a category name to the expected UNIX group name"
+  [category]
   (format "%s-%s" group-prefix category))
 
 ;;; shortcut for creating comments with a nil id, i.e. for storing
-(defn create-comment [userid posted_at title text parent category]
+(defn create-comment
+  "Constructor for a comment that simplifies building a comment. For example,
+for a new comment, edited_at will be the same as posted_at. IDs are also not
+assigned until the comment is stored in the database."
+  [userid posted_at title text parent category]
   (Comment. nil userid posted_at posted_at title text parent category))

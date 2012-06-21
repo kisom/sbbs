@@ -36,14 +36,13 @@ example, users in the `sbbs` group are allowed access to the `sbbs`
 software. Access to the subcategories is determined by checking for
 membership in the appropriate group (sbbs-<category-name>).
 
-### Aggressive Encryption
-The server has a secret key in the installation that is readable only
-by the root user. Aggressive encryption means we encrypt as early as
-possible and decrypt as late as possible.
-
-My background is as a UNIX security engineer, and I have attempted to
-apply these principles to software development in Clojure.
-
+## Board Layout
+The board is subdivided into categories. These are intended to be high-level
+organisational units for conversations. Conversations, in turn, are termed
+"threads" and are composed of a "parent" comment and a number of replies,
+organised by the timestamp they are posted. In the code, a lot of references 
+are made to comment and category IDs; these are the UUIDs assigned by couch
+to the document representing a category or a comment.
 
 ## License
 

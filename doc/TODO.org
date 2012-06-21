@@ -2,3 +2,8 @@
   - document the code
   - document the views
   - write up database architecture
+
+- TODO: code overhaul
+  * database information should come from environment variables
+  * user ID should come from the currently-logged in user
+  * timestamp should be generated when the comment is created

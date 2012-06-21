@@ -23,19 +23,31 @@
 (defn- name-from-id [id db]
   (:name (get-document db id)))
 
-(defn category-name-from-id [categoryid]
+(defn category-name-from-id
+  "Translate a category ID into its human-readable name."
+  [categoryid]
   (name-from-id categoryid sbbs-categorydb))
 
-(defn user-name-from-id [userid]
+(defn user-name-from-id
+  "Translate a user ID into its human-readable name."
+  [userid]
   (name-from-id userid sbbs-userdb))
 
 ;;; currently a stubbed pass-through, enables us to easily support
 ;;; encrypting comments.
-(defn restore-comment [comment]
+(defn restore-comment
+  "Perform any manipulation required to get comment into readable form, i.e. if
+a BBCode filter is to be used or the comment is encrypted, it should be
+proccessed here. Currently, the comment is just passed through with any
+manipulation."
+  [comment]
   comment)
 
 ;;; load the comment from the database
-(defn load-comment [id]
+(defn load-comment
+  "Given a comment ID, grab the revelant document from the database and load it
+into an sbbs.records.Comment record."
+  [id]
   (let [raw-comment (get-document sbbs-commentdb id)
         comment (restore-comment raw-comment)
         loaded-comment (sbbs.records.Comment.
@@ -53,7 +65,9 @@
 
 
 ;;; store a comment in the database
-(defn store-comment [comment]
+(defn store-comment
+  "Store an instance of an sbbs.records.Comment record in the database."
+  [comment]
   (let [parent (if (nil? (:parent comment)) 0 (:parent comment))]
    (:id (first
          (bulk-update sbbs-commentdb [
@@ -66,7 +80,11 @@
                                        :category (:category comment) }
                                       ])))))
 
-(defn reply-to-comment [userid posted_at text parentid]
+(defn reply-to-comment
+  "Given the user ID of the user replying, timestamp of the reply, text of the
+reply, and ID of the comment being replied to, create an appropriate instance of
+an sbbs.records.Comment record."
+  [userid posted_at text parentid]
   (if (= 0 parentid)
     nil
     (let [parent (load-comment parentid)]
@@ -79,68 +97,78 @@
        (:category parent)))))
 
 ;;; determine whether a comment is the thread leader
-(defn thread-leader? [comment]
+(defn thread-parent?
+  "Given an instance of an sbbs.records.Comment record, determine if it is the
+parent comment in a thread. Returns true if the comment is the parent, and
+false otherwise."
+  [comment]
   (or (= 0 (:parent comment)) (nil? (:parent comment))))
 
-(defn id-thread-leader? [commentid]
+(defn id-thread-leader?
+  "Given the ID of a comment, determine if it is the parent comment in a
+thread. Returns true if the comment is the parent, and false otherwise."
+  [commentid]
   (let [comment (load-comment commentid)]
       (or (= 0 (:parent comment)) (nil? (:parent comment)))))
 
 ;;; is the comment in the db
-(defn valid-comment? [commentid]
+(defn valid-comment?
+  "Returns true if the given comment ID belongs to a comment in the database."
+  [commentid]
   (not (nil? (load-comment commentid))))
 
-;;; retrieve a sorted vector of comments in a thread
-(defn load-thread [parentid]
-   (sort-by :posted_at <
-            (vector nil)))
-
- ;; (defn get-thread-parent [comment-thread]
- ;;   (let [parent (filter #(= (:parent %) 0) comment-thread)]
- ;;     (if (= (count parent) 1)
- ;;       (first parent)
- ;;       nil)))
-
-;;; assume we are dealing with a vector of comments that match a
-;;; particular category; find all the parent threads
-(defn get-comment-threads [category]
-  (filter #(= (:parent %) 0) category))
-
-(defn get-comment-thread-titles [category]
-  (map :title (get-comment-threads category)))
-
-(defn get-db-base-url []
+(defn- get-db-base-url
+  "Returns the base url for the comment database. Useful as a building block
+in checking views."
+  []
   (format "%s://%s:%d%s/_design/comments/_view"
           (:protocol sbbs-commentdb)
           (:host sbbs-commentdb)
           (:port sbbs-commentdb)
           (:path sbbs-commentdb)))
 
-(defn reply-view-url [parentid]
+(defn- reply-view-url
+  "Returns the url for the Couch view that returns all replies for a given
+parent comment ID."
+  [parentid]
   (format "%s/replies?key=\"%s\""
           (get-db-base-url)
           parentid))
 
-(defn retrieve-couch-view-results [url]
+(defn- retrieve-couch-view-results
+  "Given the url for a particular view (with all parameters filled in), retrieve
+the results and decode it from JSON to a Clojure map."
+  [url]
   ((cheshire.core/decode
     (slurp url)) "rows"))
 
-(defn get-replies [parentid]
+(defn get-replies
+  "Given a parent ID, retrieve a list of all replies to that comment."
+  [parentid]
   (retrieve-couch-view-results (reply-view-url parentid)))
 
-(defn build-thread [parentid]
-  (flatten
-   (vector
-    (load-comment parentid)
-    (map #'load-comment (map #(% "id") (get-replies parentid)))
-    )))
+(defn build-thread
+  "Given a parent ID, create a list of sbbs.records.Comment records for the
+correspondng document in the database and all corresponding replies."
+  [parentid]
+  (sort-by :posted_at <
+           (flatten
+            (vector
+             (load-comment parentid)
+             (map #'load-comment (map #(% "id") (get-replies parentid)))
+             ))))
 
-(defn category-list-view-url [categoryid]
+(defn category-list-view-url
+  "Returns the url for the Couch view that returns all the categories for which
+there exist comments."
+  [categoryid]
   (format "%s/catlist?key=\"%s\""
           (get-db-base-url)
           categoryid))
 
-(defn build-category [categoryid]
+(defn build-category
+  "Given a category ID, build a list of all the threads in that category."
+  [categoryid]
   (map #'build-thread
        (map #(% "id")
             (retrieve-couch-view-results
