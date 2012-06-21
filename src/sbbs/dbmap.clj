@@ -18,27 +18,38 @@
 (def sbbs-commentdb (get-database -sbbs-commentdb-name))
 (def sbbs-userdb (get-database -sbbs-userdb-name))
 
+;;; utility functions to translate ids to friendly names
+(defn- name-from-id [id db]
+  (:name (get-document db id)))
+
+(defn category-name-from-id [categoryid]
+  (name-from-id categoryid sbbs-categorydb))
+
+(defn user-name-from-id [userid]
+  (name-from-id userid sbbs-userdb))
+
 ;;; currently a stubbed pass-through, enables us to easily support
 ;;; encrypting comments.
 (defn restore-comment [comment]
   comment)
 
-;;; determine whether a comment is the thread leader
-(defn thread-leader? [comment]
-  (or (= 0 (:parent comment)) (nil? (:parent comment))))
-
 ;;; load the comment from the database
 (defn load-comment [id]
   (let [raw-comment (get-document sbbs-commentdb id)
-        comment (restore-comment raw-comment)]
-    (sbbs.records.Comment. (:id comment)
-                           (:userid comment)
-                           (:posted_at comment)
-                           (:edited_at comment)
-                           (:title comment)
-                           (:text comment)
-                           (:parent comment)
-                           (:category comment))))
+        comment (restore-comment raw-comment)
+        loaded-comment (sbbs.records.Comment.
+                        (:_id comment)
+                        (:userid comment)
+                        (:posted_at comment)
+                        (:edited_at comment)
+                        (:title comment)
+                        (:text comment)
+                        (:parent comment)
+                        (:category comment))]
+    (if (nil? (:id loaded-comment))
+      nil
+      loaded-comment)))
+
 
 ;;; store a comment in the database
 (defn store-comment [comment]
@@ -47,20 +58,52 @@
          (bulk-update sbbs-commentdb [
                                       {:userid (:userid comment)
                                        :posted_at (:posted_at comment)
+                                       :edited_at (:edited_at comment)
                                        :title (:title comment)
                                        :text (:text comment)
                                        :parent (:parent comment)
                                        :category (:category comment) }
                                       ])))))
 
-(defn reply-to-comment [userid posted_at text parent]
-  (if (= 0 parent)
+(defn reply-to-comment [userid posted_at text parentid]
+  (if (= 0 parentid)
     nil
-    (let [parent-comment (load-comment parent)]
+    (let [parent (load-comment parentid)]
       (sbbs.records/create-comment
        userid
        posted_at
        (:title parent)
        text
-       parent
+       (:id parent)
        (:category parent)))))
+
+;;; determine whether a comment is the thread leader
+(defn thread-leader? [comment]
+  (or (= 0 (:parent comment)) (nil? (:parent comment))))
+
+(defn id-thread-leader? [commentid]
+  (let [comment (load-comment commentid)]
+      (or (= 0 (:parent comment)) (nil? (:parent comment)))))
+
+;;; is the comment in the db
+(defn valid-comment? [commentid]
+  (not (nil? (load-comment commentid))))
+
+;;; retrieve a sorted vector of comments in a thread
+(defn load-thread [parentid]
+   (sort-by :posted_at <
+            (vector nil)))
+
+ ;; (defn get-thread-parent [comment-thread]
+ ;;   (let [parent (filter #(= (:parent %) 0) comment-thread)]
+ ;;     (if (= (count parent) 1)
+ ;;       (first parent)
+ ;;       nil)))
+
+;;; assume we are dealing with a vector of comments that match a
+;;; particular category; find all the parent threads
+(defn get-comment-threads [category]
+  (filter #(= (:parent %) 0) category))
+
+(defn get-comment-thread-titles [category]
+  (map :title (get-comment-threads category)))
