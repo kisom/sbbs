@@ -1,0 +1,4 @@
+- TODO: code cleanup
+  - document the code
+  - document the views
+  - write up database architecture

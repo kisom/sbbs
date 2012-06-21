@@ -1,0 +1,33 @@
+// category views
+// sbbs_dev1_categories/_design/categories/_view/list_categories
+function(doc) {
+    var category_name, description;
+    if (doc.name && doc.description) {
+        emit(doc.name, doc.description);
+    }
+}
+
+// comment views
+// sbbs_dev1_comments/_design/comments/_view/catlist
+function(doc) {
+    if (doc.category && !doc.parent && doc.parent != null) {
+        emit(doc.category, doc.title);
+    }
+}
+
+// sbbs_dev1_comments/_design/comments/_view/parents
+function(doc) {
+  if (!doc.parent && doc.parent != null) {
+    emit(doc.title, doc.category);
+  }
+}
+
+// sbbs_dev1_comments/_design/comments/_view/replies
+function(doc) {
+  if (doc.parent) {
+    emit(doc.parent, doc.posted_at);
+  }
+}
+
+
+
