@@ -6,6 +6,10 @@
   (:import [sbbs.records User])
   (:import [sbbs.records Category]))
 
+;;;; dbmap.clj
+;;;; interface between database and data types specified in record.clj; also
+;;;; provides functions for accessing the database.
+
 ;;; connect to the component databases
 ;;;     TODO: read from env
 
@@ -117,6 +121,8 @@ thread. Returns true if the comment is the parent, and false otherwise."
   [commentid]
   (not (nil? (load-comment commentid))))
 
+;;; functions for building urls to access the various Couch views
+
 (defn- get-db-base-url
   "Returns the base url for the comment database. Useful as a building block
 in checking views."
@@ -126,6 +132,16 @@ in checking views."
           (:host sbbs-commentdb)
           (:port sbbs-commentdb)
           (:path sbbs-commentdb)))
+
+(defn- get-category-db-base-url
+  "Returns the base url for the category database. Useful as a building block
+in checking views."
+  []
+  (format "%s://%s:%d%s/_design/categories/_view"
+          (:protocol sbbs-categorydb)
+          (:host sbbs-categorydb)
+          (:port sbbs-categorydb)
+          (:path sbbs-categorydb)))
 
 (defn- reply-view-url
   "Returns the url for the Couch view that returns all replies for a given
@@ -173,3 +189,20 @@ there exist comments."
        (map #(% "id")
             (retrieve-couch-view-results
              (category-list-view-url categoryid)))))
+
+(defn category-thread-count
+  "Get a count of the number of threads in a category."
+  [categoryid]
+  (count
+   (map
+    #(% "name")
+    (retrieve-couch-view-results
+     (format "%s/list_categories" (get-category-db-base-url))))))
+  
+(defn get-category-list
+  "Retrieve a list of all categories."
+  [categoryid]
+  (map
+   #(% "name")
+   (retrieve-couch-view-results
+    (format "%s/list_categories" (get-category-db-base-url)))))
