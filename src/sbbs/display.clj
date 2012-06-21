@@ -32,3 +32,20 @@
   (let [sorted-thread (sort-by :posted_at < comment-thread)]
     (doseq [comment sorted-thread]
       (print-comment comment))))
+
+(defn print-categories
+  "Pretty print a list of categories."
+  []
+  (doseq [category (get-category-list)]
+    (println category)))
+
+(defn print-categories-with-count
+  "Pretty print a list of categories with the number of posts in each
+category."
+  []
+  (doseq [category (get-category-list)]
+    (printf "%s (%d)"
+            category
+            (category-thread-count (category-id-from-name category)))))
+
+  
