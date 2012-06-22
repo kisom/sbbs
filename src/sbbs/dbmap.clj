@@ -185,8 +185,9 @@ correspondng document in the database and all corresponding replies."
            (flatten
             (vector
              (load-comment parentid)
-             (map #'load-comment (map #(% "id") (get-replies parentid)))
-             ))))
+             (map #'load-comment
+                  (map #(% "id")
+                       (get-replies parentid)))))))
 
 (defn category-list-view-url
   "Returns the url for the Couch view that returns all the categories for which
