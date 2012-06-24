@@ -15,7 +15,7 @@
   "Determine whether the current user is in the specified group."
   [group]
   (let [group-file (slurp "/etc/group")
-        group-regex (format "%s:\\*:\\d+:[\\w,]*" group)
+        group-regex (format "%s:[\\*x!]:\\d+:[\\w,]*" group)
         groups (re-seq (re-pattern group-regex) group-file)]
     (if (empty? groups)
       false
