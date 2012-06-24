@@ -18,14 +18,15 @@
   "Pretty printing for a comment. Currently, doesn't word wrap."
   [comment]
   (let [leader (if (sbbs.dbmap/thread-parent? comment) "" "\t")]
-    (if (sbbs.dbmap/thread-parent? comment)
+    (if (empty? leader)
       (printf "---------\n%s\n" (:title comment)))
     (printf "%sauthor: %s at %s\n"
             leader
             (sbbs.dbmap/user-name-from-id (:userid comment))
             (format-timestamp (:posted_at comment)))
     (printf "%s%s\n" leader (:text comment))
-    (printf "\n")))
+    (printf "\n")
+    (flush)))
 
 ;;; print out a thread of comments
 (defn print-thread
@@ -43,8 +44,6 @@
     (println category)))
 
 (defn print-categories-with-count
-  "Pretty print a list of categories with the number of posts in each
-category."
   []
   (doseq [category (sbbs.dbmap/get-category-list)]
     (printf "%s (%d)\n"
@@ -63,7 +62,6 @@ category."
                                       :comment %2)
                            (map str (take 10 (iterate inc 1)))
                            sorted-threads)]
-    (println thread-select)
     (doseq [thread thread-select]
       (printf "%s: %s %s - %s\n"
               (:num thread)

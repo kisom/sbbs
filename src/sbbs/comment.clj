@@ -19,7 +19,9 @@
 (defn reply
   "Reply to a comment."
   [text parentid]
-  (sbbs.dbmap/reply-to-comment
-   (sbbs.dbmap/get-userid)
-   (sbbs.util/timestamp-now)
-   parentid))
+  (sbbs.dbmap/store-comment
+   (sbbs.dbmap/reply-to-comment
+    (sbbs.dbmap/get-userid)
+    (sbbs.util/timestamp-now)
+    text
+    parentid)))

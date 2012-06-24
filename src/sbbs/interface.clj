@@ -15,6 +15,9 @@
 (declare select-thread-from-category)
 (declare invalid-thread-selection)
 (declare thread-view)
+(declare thread-view-input)
+(declare thread-view-invalid-input)
+(declare reply-to-thread)
 
 (defn print-with-flush
   [fmt & args]
@@ -29,11 +32,12 @@
 
 (defn goto-category
   []
-  (let [category-list (sbbs.dbmap/get-category-list)
+  (let [category-list (filter #(authorised-category? %)
+                              (sbbs.dbmap/get-category-list))
         category (prompt "category> ")]
     (if (sbbs.util/in? category-list category)
       (category-view category)
-      (invalid-category))))
+      (invalid-category category))))
 
 ;;; top-level display of groups
 (defn toplevel-view
@@ -47,7 +51,7 @@
 
 (defn- invalid-category
   [category]
-  (print-with-flush "%s is not a valid category!\n")
+  (print-with-flush "%s is not a valid category!\n" category)
   (toplevel-view))
 
 (defn category-view
@@ -85,9 +89,9 @@
   (let [user-in (prompt "thread> ")]
     (if (or (> 0 (Integer. user-in))
             (< 10 (Integer. user-in)))
-      (invalid-thread-selection category threads)
-      (thread-view category (first
-                             (filter #(= user-in (:num %)) threads))))))
+      (invalid-thread-selection category threads))
+    (thread-view category (first
+                           (filter #(= user-in (:num %)) threads)))))
 
 
 (defn invalid-thread-selection
@@ -97,5 +101,27 @@
 
 (defn thread-view
   [category thread]
-  (printf "thread %s selected\n" thread)
-  (print-thread (:id thread)))
+  (sbbs.display/print-thread (:id thread))
+  (thread-view-input category thread))
+
+(defn thread-view-input
+  [category thread]
+  (let [user-in (prompt "r(eply) c(ategory view) t(oplevel) q(uit) |> ")]
+    (cond (= user-in "r") (reply-to-thread category thread)
+          (= user-in "c") (category-view category)
+          (= user-in "t") (toplevel-view)
+          (= user-in "q") (System/exit 0)
+          true (thread-view-invalid-input category thread))))
+
+(defn thread-view-invalid-input
+  [category thread]
+  (println "invalid option!")
+  (thread-view-input category thread))
+
+(defn reply-to-thread
+  [category thread]
+  (let [parentid (:id thread)
+        text (prompt "reply: ")]
+    (println "parentid: " parentid "\ttext: " text)
+    (sbbs.comment/reply text parentid))
+  (thread-view category thread))
