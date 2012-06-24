@@ -1,4 +1,5 @@
-(ns sbbs.util)
+(ns sbbs.util
+  (:use [sbbs.records]))
 
 (defn timestamp-now  []
   (. java.lang.System currentTimeMillis))
@@ -14,16 +15,16 @@
   "Determine whether the current user is in the specified group."
   [group]
   (let [group-file (slurp "/etc/group")
-        group-regex (format "%s:\\*:\\d+:\\w*" group)]
-    (in?
-     (clojure.string/split
-      (last
+        group-regex (format "%s:\\*:\\d+:[\\w,]*" group)
+        groups (re-seq (re-pattern group-regex) group-file)]
+    (if (empty? groups)
+      false
+      (in?
        (clojure.string/split
-        (first
-         (re-seq (re-pattern group-regex) group-file))
-        #":"))
-      #",")
-     (System/getenv "LOGNAME"))))
+        (last
+         (clojure.string/split (first groups) #":"))
+        #",")
+       (System/getenv "LOGNAME")))))
 
 (defn authorised-user?
   "Check the group file for authorised users."
@@ -34,3 +35,8 @@
   "Determine whether the current user is an admin."
   []
   (user-in-group? "sbbs-admin"))
+
+(defn authorised-category?
+  "Determine whether the current user is authorised to view the category."
+  [category]
+  (user-in-group? (sbbs.records/category-to-group category)))
