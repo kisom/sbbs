@@ -64,9 +64,11 @@
                            (map str (take 10 (iterate inc 1)))
                            sorted-threads)]
     (doseq [thread thread-select]
-      (printf "%s: %s %s - %s\n"
+      (printf "%s: %s %s - %s (%d / %s\n"
               (:num thread)
               (format-timestamp (:posted_at (:comment thread)))
               (sbbs.dbmap/user-name-from-id (:userid (:comment thread)))
-              (:title (:comment thread))))
+              (:title (:comment thread))
+              (count (build-thread (:id thread)))
+              ))
     thread-select))
