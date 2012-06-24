@@ -13,9 +13,9 @@
 
 ;;; right now, I don't know how to read env vars in clojure, so
 ;;; dbnames are hardcoded
-(def -sbbs-categorydb-name "sbbs_dev1_categories")
-(def -sbbs-commentdb-name "sbbs_dev1_comments")
-(def -sbbs-userdb-name "sbbs_dev1_users")
+(def -sbbs-categorydb-name (System/getenv "SBBS_CATEGORYDB"))
+(def -sbbs-commentdb-name (System/getenv "SBBS_COMMENTDB"))
+(def -sbbs-userdb-name (System/getenv "SBBS_USERDB"))
 
 (def sbbs-categorydb (get-database -sbbs-categorydb-name))
 (def sbbs-commentdb (get-database -sbbs-commentdb-name))
@@ -34,6 +34,11 @@
   "Translate a user ID into its human-readable name."
   [userid]
   (name-from-id userid sbbs-userdb))
+
+(defn add-user
+  "Add a user to the database."
+  [username]
+  (bulk-update sbbs-userdb [{:name username}]))
 
 ;;; currently a stubbed pass-through, enables us to easily support
 ;;; encrypting comments.

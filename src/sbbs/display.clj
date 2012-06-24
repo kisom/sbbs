@@ -55,7 +55,7 @@
   [category]
   (let [sorted-threads (sort-by :posted_at >
                                 (flatten
-                                 (sbbs.dbmap/build-category
+                                 (sbbs.dbmap/get-parents-for-category
                                   (sbbs.dbmap/category-id-from-name category))))
         thread-select (map #(hash-map :num %1
                                       :id (:id %2)

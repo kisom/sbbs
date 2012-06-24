@@ -1,0 +1,21 @@
+#!/bin/sh
+
+VERSION=$(cat project.clj | head -1 | awk '{print $3;}')
+JARFILE="sbbs-${VERSION}-standalone.jar"
+
+if [ -z "${SBBS_CATEGORYDB}" ]; then
+    export SBBS_CATEGORYDB="sbbs_categories"
+fi
+
+if [ -z "${SBBS_COMMENTDB}" ]; then
+    export SBBS_COMMENTDB="sbbs_comments"
+fi
+
+if [ -z "${SBBS_USERDB}" ]; then
+    export SBBS_USERDB="sbbs_users"
+fi
+
+echo "loading sbbs..."
+echo
+echo
+java -jar $JARFILE
