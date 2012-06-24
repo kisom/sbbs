@@ -255,11 +255,10 @@ there exist comments."
 (defn get-category-list
   "Retrieve a list of all categories."
   []
-  (filter #(sbbs.util/authorised-category? %)
-   (map
+  (map
     #(% "key")
     (retrieve-couch-view-results
-     (format "%s/list_categories" (get-category-db-base-url))))))
+     (format "%s/list_categories" (get-category-db-base-url)))))
 
 (defn category-id-from-name
   "Translate a category name to its respective ID."

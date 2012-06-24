@@ -1,5 +1,6 @@
 (ns sbbs.util
-  (:use [sbbs.records]))
+  (:use [sbbs.records]
+        [sbbs.dbmap :only [user-id-from-name]]))
 
 (defn timestamp-now  []
   (. java.lang.System currentTimeMillis))
@@ -29,7 +30,9 @@
 (defn authorised-user?
   "Check the group file for authorised users."
   []
-  (user-in-group? "sbbs"))
+  (and
+   (not (nil? (sbbs.dbmap/user-id-from-name (System/getenv "LOGNAME"))))
+   (user-in-group? "sbbs")))
 
 (defn authorised-admin?
   "Determine whether the current user is an admin."

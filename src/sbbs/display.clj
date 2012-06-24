@@ -45,7 +45,8 @@
 
 (defn print-categories-with-count
   []
-  (doseq [category (sbbs.dbmap/get-category-list)]
+  (doseq [category (filter #(sbbs.util/authorised-category? %)
+                           (sbbs.dbmap/get-category-list))]
     (printf "%s (%d)\n"
             category
             (sbbs.dbmap/category-thread-count

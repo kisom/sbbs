@@ -75,7 +75,7 @@
           (= user-in "n") (post-new-thread category)
           (= user-in "q") (System/exit 0)
           (= user-in "l") (category-view category)
-          true (category-view-input-invalid category category threads))))
+          true (category-view-input-invalid category threads))))
 
 (defn post-new-thread
   [category]
