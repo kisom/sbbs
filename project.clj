@@ -1,4 +1,4 @@
-(defproject sbbs "0.9.0-alpha"
+(defproject sbbs "0.9.1-beta"
   :description "simple bulletin board system"
   :license {:name "ISC license"
             :url "http://www.tyrfingr.is/licenses/LICENSE.ISC"

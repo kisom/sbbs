@@ -35,7 +35,7 @@
   [userid]
   (name-from-id userid sbbs-userdb))
 
-(defn add-user
+(defn adduser
   "Add a user to the database."
   [username]
   (bulk-update sbbs-userdb [{:name username}]))

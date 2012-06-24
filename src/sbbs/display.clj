@@ -69,6 +69,9 @@
               (format-timestamp (:posted_at (:comment thread)))
               (sbbs.dbmap/user-name-from-id (:userid (:comment thread)))
               (:title (:comment thread))
-              (count (build-thread (:id thread)))
-              ))
+              (count (sbbs.dbmap/build-thread (:id thread)))
+              (:name (last (
+                            sort-by :posted_at >
+                                    (sbbs.dbmap/get-replies
+                                     (:id thread)))))))
     thread-select))
