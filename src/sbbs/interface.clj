@@ -122,6 +122,5 @@
   [category thread]
   (let [parentid (:id thread)
         text (prompt "reply: ")]
-    (println "parentid: " parentid "\ttext: " text)
     (sbbs.comment/reply text parentid))
   (thread-view category thread))
