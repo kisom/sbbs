@@ -1,6 +1,7 @@
 #!/bin/sh
 
-VERSION=$(cat project.clj | head -1 | awk '{print $3;}')
+SBBS_DIR=$(dirname $0)
+VERSION=$(cat ${SBBS_DIR}/project.clj | head -1 | awk '{print $3;}')
 JARFILE="sbbs-${VERSION}-standalone.jar"
 
 if [ -z "${SBBS_CATEGORYDB}" ]; then
