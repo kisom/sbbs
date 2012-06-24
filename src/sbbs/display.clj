@@ -53,19 +53,21 @@ category."
              (sbbs.dbmap/category-id-from-name category)))))
 
 (defn print-thread-list
-  "Print a list of threads in a category."
   [category]
-  (let [parents (sbbs.dbmap/get-parents-for-category
-                   (sbbs.dbmap/category-id-from-name category))
-        sorted-parents (sort-by :posted_at < parents)]
-    (doseq [thread sorted-parents]
-      (printf "%s %s - %s (parent: %s)\n"
-              (format-timestamp (:posted_at thread))
-              (sbbs.dbmap/user-name-from-id (:userid thread))
-              (:title thread)
-              (:id thread)))))
-
-(defn print-thread-from-title
-  "Given a title, print the thread."
-  [title]
-  )
+  (let [sorted-threads (sort-by :posted_at >
+                                (flatten
+                                 (sbbs.dbmap/build-category
+                                  (sbbs.dbmap/category-id-from-name category))))
+        thread-select (map #(hash-map :num %1
+                                      :id (:id %2)
+                                      :comment %2)
+                           (map str (take 10 (iterate inc 1)))
+                           sorted-threads)]
+    (println thread-select)
+    (doseq [thread thread-select]
+      (printf "%s: %s %s - %s\n"
+              (:num thread)
+              (format-timestamp (:posted_at (:comment thread)))
+              (sbbs.dbmap/user-name-from-id (:userid (:comment thread)))
+              (:title (:comment thread))))
+    thread-select))

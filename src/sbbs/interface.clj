@@ -12,6 +12,9 @@
 (declare category-view-input-invalid)
 (declare category-view-input)
 (declare post-new-thread)
+(declare select-thread-from-category)
+(declare invalid-thread-selection)
+(declare thread-view)
 
 (defn print-with-flush
   [fmt & args]
@@ -52,23 +55,23 @@
   (println (format "\nsbbs: %s\n------%s\n"
                    category
                    (clojure.string/join (repeat (count category) "-"))))
-  (sbbs.display/print-thread-list category)
-  (category-view-input category))
+  (category-view-input category (sbbs.display/print-thread-list category)))
 
 (defn category-view-input-invalid
-  [category]
+  [category threads]
   (println "invalid input!")
-  (category-view-input category))
+  (category-view-input category threads))
 
 (defn category-view-input
-  [category]
+  [category threads]
   (let [user-in
         (prompt "l(ist threads) n(ew thread) r(ead thread) t(oplevel) q(uit) |> ")]
     (cond (= user-in "t") (toplevel-view)
+          (= user-in "r") (select-thread-from-category category threads)
           (= user-in "n") (post-new-thread category)
           (= user-in "q") (System/exit 0)
           (= user-in "l") (category-view category)
-          true (category-view-input-invalid category))))
+          true (category-view-input-invalid category category threads))))
 
 (defn post-new-thread
   [category]
@@ -76,3 +79,23 @@
         text (prompt "text: ")]
     (sbbs.comment/post title text category))
   (category-view category))
+
+(defn select-thread-from-category
+  [category threads]
+  (let [user-in (prompt "thread> ")]
+    (if (or (> 0 (Integer. user-in))
+            (< 10 (Integer. user-in)))
+      (invalid-thread-selection category threads)
+      (thread-view category (first
+                             (filter #(= user-in (:num %)) threads))))))
+
+
+(defn invalid-thread-selection
+  [category threads]
+  (println "invalid thread!")
+  (category-view-input category threads))
+
+(defn thread-view
+  [category thread]
+  (printf "thread %s selected\n" thread)
+  (print-thread (:id thread)))
