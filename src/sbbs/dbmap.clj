@@ -2,9 +2,7 @@
   (:use [com.ashafa.clutch :only [get-database bulk-update get-document]])
   (:use [cheshire.core :as json])
   (:require [sbbs.records])
-  (:import [sbbs.records Comment])
-  (:import [sbbs.records User])
-  (:import [sbbs.records Category]))
+  (:import [sbbs.records Comment]))
 
 ;;;; dbmap.clj
 ;;;; interface between database and data types specified in record.clj; also
@@ -100,6 +98,17 @@ an sbbs.records.Comment record."
        (:id parent)
        (:category parent)))))
 
+;;; create a new category
+(defn create-category
+  "Create a new category."
+  [category-name category-description]
+  (:id
+   (first
+    (bulk-update
+              sbbs-categorydb [
+                               { :name category-name
+                                :description category-description }]))))
+
 ;;; determine whether a comment is the thread leader
 (defn thread-parent?
   "Given an instance of an sbbs.records.Comment record, determine if it is the
@@ -143,6 +152,16 @@ in checking views."
           (:port sbbs-categorydb)
           (:path sbbs-categorydb)))
 
+(defn- get-user-db-base-url
+  "Returns the base url for the user database. Useful as a building block in
+checking views."
+  []
+    (format "%s://%s:%d%s/_design/users/_view"
+          (:protocol sbbs-userdb)
+          (:host sbbs-userdb)
+          (:port sbbs-userdb)
+          (:path sbbs-userdb)))
+
 (defn- parent-view-url
   "Returns the url for the Couch view that returns all parents."
   []
@@ -163,6 +182,23 @@ retrieve the results and decode it from JSON to a Clojure map."
             (filter #(= categoryid (:category %))
                     (map #'load-comment
                          (map #(% "id") parents))))))
+
+(defn user-id-from-name
+  "Translate a username to its respective ID."
+  [username]
+  (first
+   (map #(% "id")
+        (retrieve-couch-view-results
+         (format "%s/list_users?key=\"%s\""
+                 (get-user-db-base-url)
+                 username)))))
+
+;;; get the user ID from the current user
+(defn get-userid
+  "Get the current user's ID."
+  []
+  (user-id-from-name
+   (System/getenv "LOGNAME")))
 
 (defn- reply-view-url
   "Returns the url for the Couch view that returns all replies for a given

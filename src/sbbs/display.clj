@@ -2,13 +2,15 @@
   (:require [sbbs.dbmap])
   (:require [sbbs.records])
   (:import [sbbs.records Comment])
-  (:import [sbbs.records User])
-  (:import [sbbs.records Category]))
+  (:use [clj-time.coerce]
+        [clj-time.local]
+        [clj-time.format]))
 
 (defn format-timestamp
   "Given a timestamp, display it in human-readable format."
   [timestamp]
-  (format "%d" timestamp))
+  (let [date-timestamp (clj-time.coerce/from-long timestamp)]
+    (str date-timestamp)))
 
 ;;; display a comment
 ;;;; TODO: word wrapping

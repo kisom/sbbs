@@ -1,5 +1,15 @@
 (ns sbbs.core
-  (:require [sbbs.records])
-  (:import [sbbs.records Comment])
-  (:import [sbbs.records User])
-  (:import [sbbs.records Category]))
+  (:gen-class)
+  (use [sbbs.util]
+       [sbbs.interface]))
+
+(defn- not-authorised
+  "The user is not authorised to run sbbs."
+  []
+  (println "You are not authorised to run sbbs.")
+  (System/exit 1))
+
+(defn -main [& args]
+  (if (not (sbbs.util/authorised-user?))
+    (not-authorised)
+    (sbbs.interface/toplevel-view)))
