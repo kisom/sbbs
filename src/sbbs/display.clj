@@ -4,7 +4,8 @@
   (:import [sbbs.records Comment])
   (:use [clj-time.coerce]
         [clj-time.local]
-        [clj-time.format]))
+        [clj-time.format]
+        [sbbs.util]))
 
 (defn format-timestamp
   "Given a timestamp, display it in human-readable format."
@@ -54,7 +55,7 @@
 
 (defn print-thread-list
   [category]
-  (let [sorted-threads (sort-by :posted_at >
+  (let [sorted-threads (sort-by #(sbbs.dbmap/thread-last-edited %) >
                                 (flatten
                                  (sbbs.dbmap/get-parents-for-category
                                   (sbbs.dbmap/category-id-from-name category))))
@@ -64,14 +65,18 @@
                            (map str (take 10 (iterate inc 1)))
                            sorted-threads)]
     (doseq [thread thread-select]
-      (printf "%s: %s %s - %s (%d / %s\n"
+      (printf "%s: %s %s - %s (%d / %s)\n"
               (:num thread)
               (format-timestamp (:posted_at (:comment thread)))
               (sbbs.dbmap/user-name-from-id (:userid (:comment thread)))
               (:title (:comment thread))
               (count (sbbs.dbmap/build-thread (:id thread)))
-              (:name (last (
-                            sort-by :posted_at >
+              (sbbs.dbmap/user-name-from-id
+               (:userid
+                (last
+                 (sort-by :posted_at <
+                          (map #'sbbs.dbmap/load-comment
+                               (map #(% "id")
                                     (sbbs.dbmap/get-replies
-                                     (:id thread)))))))
+                                     (:id thread))))))))))
     thread-select))

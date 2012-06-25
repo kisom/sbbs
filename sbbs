@@ -16,6 +16,11 @@ if [ -z "${SBBS_USERDB}" ]; then
     export SBBS_USERDB="sbbs_users"
 fi
 
+if [ "$1" = "repl" ]; then
+    lein trampoline repl
+    exit 0
+fi
+
 echo "loading sbbs..."
 echo
 echo

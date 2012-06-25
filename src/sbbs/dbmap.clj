@@ -1,4 +1,5 @@
 (ns sbbs.dbmap
+  (:gen-class)
   (:use [com.ashafa.clutch :only [get-database bulk-update get-document]])
   (:use [cheshire.core :as json])
   (:require [sbbs.records])
@@ -269,3 +270,15 @@ there exist comments."
          (format "%s/list_categories?key=\"%s\""
                  (get-category-db-base-url)
                  category)))))
+
+(defn thread-last-edited
+  "Return a timestamp of the last edit for a thread."
+  [comment]
+  (:posted_at
+   (last
+    (sort-by :posted_at <
+             (flatten
+              [comment
+               (map load-comment
+                    (map #(% "id")
+                         (get-replies (:id comment))))])))))
