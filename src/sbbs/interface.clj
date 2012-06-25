@@ -81,15 +81,21 @@
   [category]
   (let [title (prompt "title: ")
         text (prompt "text: ")]
-    (sbbs.comment/post title text category))
+    (if (or (empty? title)
+            (empty? text))
+      (println "Title and text cannot be null - aborting!")
+      (sbbs.comment/post title text category)))
   (category-view category))
 
 (defn select-thread-from-category
   [category threads]
-  (let [user-in (prompt "thread> ")]
-    (if (or (> 0 (Integer. user-in))
-            (< 10 (Integer. user-in)))
-      (invalid-thread-selection category threads))
+  (let [user-in (prompt "thread> ")
+        thread-count (count threads)]
+    (if (empty? user-in)
+      (invalid-thread-selection category threads)
+      (if (or (> 0 (Integer. user-in))
+              (< (if (< 10 thread-count) 10 thread-count) (Integer. user-in)))
+        (invalid-thread-selection category threads)))
     (thread-view category (first
                            (filter #(= user-in (:num %)) threads)))))
 
@@ -122,5 +128,7 @@
   [category thread]
   (let [parentid (:id thread)
         text (prompt "reply: ")]
-    (sbbs.comment/reply text parentid))
+    (if (empty? text)
+      (println "canceled reply...")
+      (sbbs.comment/reply text parentid)))
   (thread-view category thread))
