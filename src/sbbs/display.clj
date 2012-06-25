@@ -66,16 +66,17 @@
                            sorted-threads)]
     (doseq [thread thread-select]
       (let [num-replies (count (sbbs.dbmap/build-thread (:id thread)))]
-          (printf "%s: %s %s - %s (%d / %s)\n"
+          (printf "%s: %s %s - %s (%d repl%s / last from %s)\n"
                   (:num thread)
                   (format-timestamp (:posted_at (:comment thread)))
                   (sbbs.dbmap/user-name-from-id (:userid (:comment thread)))
                   (:title (:comment thread))
                   num-replies
+                  (if (= 1 num-replies) "y" "ies")
                   (sbbs.dbmap/user-name-from-id
                    (:userid
                     (if (= 1 num-replies)
-                      thread
+                      (:comment thread)
                       (last
                        (sort-by :posted_at <
                                 (map #'sbbs.dbmap/load-comment
