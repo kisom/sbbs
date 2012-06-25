@@ -65,18 +65,21 @@
                            (map str (take 10 (iterate inc 1)))
                            sorted-threads)]
     (doseq [thread thread-select]
-      (printf "%s: %s %s - %s (%d / %s)\n"
-              (:num thread)
-              (format-timestamp (:posted_at (:comment thread)))
-              (sbbs.dbmap/user-name-from-id (:userid (:comment thread)))
-              (:title (:comment thread))
-              (count (sbbs.dbmap/build-thread (:id thread)))
-              (sbbs.dbmap/user-name-from-id
-               (:userid
-                (last
-                 (sort-by :posted_at <
-                          (map #'sbbs.dbmap/load-comment
-                               (map #(% "id")
-                                    (sbbs.dbmap/get-replies
-                                     (:id thread))))))))))
+      (let [num-replies (count (sbbs.dbmap/build-thread (:id thread)))]
+          (printf "%s: %s %s - %s (%d / %s)\n"
+                  (:num thread)
+                  (format-timestamp (:posted_at (:comment thread)))
+                  (sbbs.dbmap/user-name-from-id (:userid (:comment thread)))
+                  (:title (:comment thread))
+                  num-replies
+                  (sbbs.dbmap/user-name-from-id
+                   (:userid
+                    (if (= 1 num-replies)
+                      thread
+                      (last
+                       (sort-by :posted_at <
+                                (map #'sbbs.dbmap/load-comment
+                                     (map #(% "id")
+                                          (sbbs.dbmap/get-replies
+                                           (:id thread))))))))))))
     thread-select))
