@@ -21,7 +21,7 @@ the users' login shell would be replaced by the `sbbs` binary. `sbbs`
 was never finished due to a combination of life's vagaries and a
 general lack of developing skill among the group's members at that time.
 
-During discussion on the hackNET [SILC](http://www.silc.org) channel, 
+During discussion on the hackNET [SILC](http://www.silcnet.org) channel, 
 [steveo](http://saolsen.github.com) brought up sbbs and noted, "now,
 it would take a few days of solid hacking to finish." I was looking
 for a project to get back into Clojure with, so I've taken up work on
